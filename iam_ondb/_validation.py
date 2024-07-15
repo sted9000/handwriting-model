@@ -24,7 +24,7 @@ def validate_dataset(path):
     for dir_name in expected_directory_layout:
         if dir_name not in layout:
             missing.append(dir_name)
-
+    print(missing)
     if len(missing) > 0:
         raise MissingFilesError(missing)
 

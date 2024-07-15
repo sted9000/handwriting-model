@@ -10,6 +10,7 @@ class IAMonDBProvider(DataSplittingProvider):
         if iam_home is None:
             iam_home = '../iam_ondb_home'
 
+
         training_data_size, validation_data_size = self._parse_args(training_data_size,
                                                                     validation_data_size)
 

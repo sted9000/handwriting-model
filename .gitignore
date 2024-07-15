@@ -12,3 +12,9 @@ charset.txt
 my-app/public/
 my-app/package-lock.json
 .python-version
+/data
+/iam_checkpoints
+/samples
+epochs_stats.log
+/.myenv
+.DS_Store
