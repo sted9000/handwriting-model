@@ -9,7 +9,7 @@ datasets/
 *.h5
 charset.txt
 !/results/**/*.png
-my-app/public/
+my-app/publi
 my-app/package-lock.json
 .python-version
 /data
