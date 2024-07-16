@@ -1,55 +1,17 @@
 import pickle
 from iam_ondb import bounded_iterator
-from .base import Provider, DataSplittingProvider
+from .base import DataSplittingProvider
 import os
 
 
-# Create a subclasses of Provider here
-class MyProvider(Provider):
-    name = 'example'
+class Custom:
 
-    def get_training_data(self):
-        raise NotImplementedError
-
-    def get_validation_data(self):
-        raise NotImplementedError
-
-
-class DummyProvider(Provider):
-    name = 'dummy'
-
-    def get_training_data(self):
-        handwriting = [
-            [(1, 2), (1, 3), (2, 5)],
-            [(10, 3), (15, 4), (18, 8)],
-            [(22, 10), (20, 5)]
-        ]
-
-        transcript = 'Hi'
-        yield handwriting, transcript
-
-    def get_validation_data(self):
-        handwriting = [
-            [(1, 2), (1, 3), (2, 5)],
-            [(10, 3), (15, 4), (18, 8)],
-            [(22, 10), (20, 5)]
-        ]
-
-        transcript = 'Hi'
-        yield handwriting, transcript
-
-#
-
-class Ink:
-
-    def __init__(self, coord_path, transcript_path):
-        self.coord_path = coord_path
-        self.transcript_path = transcript_path
+    def __init__(self, data_dir):
+        self.data_dir = data_dir
 
     def __iter__(self):
 
-        for file in self.file_names(self.coord_path):
-            print(file)
+        for file in self.file_names(self.data_dir):
             strokes, transcript = self.get_data(file)
             yield strokes, transcript
 
@@ -58,15 +20,16 @@ class Ink:
             yield x
 
     def get_data(self, file):
-        strokes = pickle.load(open(os.path.join(self.coord_path, file), 'rb'))
-        with open(os.path.join(self.transcript_path, file[:-4] + '.txt'), 'r') as f:
-            transcript = f.read().strip()
+        # load the pickle file
+        content = pickle.load(open(os.path.join(self.data_dir, file), 'rb'))
+        transcript = content['transcript']
+        strokes = content['strokes']
 
         return strokes, transcript
 
 
-class InkProvider(DataSplittingProvider):
-    name = 'ink'
+class CustomProvider(DataSplittingProvider):
+    name = 'custom'
 
     def __init__(self, training_data_size, validation_data_size=0, data_dir=None):
         if data_dir is None:
@@ -83,7 +46,7 @@ class InkProvider(DataSplittingProvider):
         return int(training_data_size), int(validation_data_size)
 
     def get_generator(self, training_data_size, validation_data_size, data_dir):
-        db = Ink(os.path.join(data_dir, 'pkl'), os.path.join(data_dir, 'txt'))
+        db = Custom(data_dir)
 
         if validation_data_size:
             num_examples = training_data_size + validation_data_size
@@ -93,4 +56,3 @@ class InkProvider(DataSplittingProvider):
 
         for strokes, text in it:
             yield strokes, text
-
