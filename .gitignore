@@ -2,7 +2,6 @@ venv/
 datasets/
 \.idea/
 *.pyc
-*.png
 *.jpg
 *.log
 *.zip
