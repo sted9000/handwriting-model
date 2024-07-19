@@ -4,78 +4,110 @@
 
 ![Handwriting Synthesis](./assets/improve_me_please.png)
 
-This repository aims to build upon the work of [X-rayLaser's handwriting synthesis](https://github.com/X-rayLaser/pytorch-handwriting-synthesis-toolkit) and build upon it. More specifically, make it indistinguishable from human produced handwriting! 
+This repository aims to enhance [X-rayLaser's handwriting synthesis](https://github.com/X-rayLaser/pytorch-handwriting-synthesis-toolkit) project, making it indistinguishable from human-produced handwriting.
 
-The original repository is a toolkit for handwriting synthesis using recurrent neural networks. The implementation closely follows Alex Graves's paper [Generating Sequences With Recurrent Neural Networks](https://arxiv.org/abs/1308.0850). I highly recommend X-rayLaser's README and the paper for a great explanation of the model and the process.
+The original toolkit uses recurrent neural networks for handwriting synthesis, following Alex Graves's paper [Generating Sequences With Recurrent Neural Networks](https://arxiv.org/abs/1308.0850). I highly recommend reading X-rayLaser's README and the paper for a thorough explanation of the model and process.
 
-In a nutshell, a model takes inputs in the shape of an array of tuple  (x-coord, y-coord, end_of_stroke) paired with a string of text. The model predicts the next pen coordinates and whether the pen is touching the surface. The result is a sequence of pen coordinates that form handwritten line of text.
+In essence, the model takes an array of tuples (x-coord, y-coord, end_of_stroke) paired with a string of text as input. It predicts the next pen coordinates and whether the pen is touching the surface, resulting in a sequence of pen coordinates that form handwritten text.
 
-Here, I will expand on the original work by:
-1. Collecting and processing custom and more diverse dataset
-1. Experimenting tweaking training parameters
-1. Layer an additional model to account for pen pressure
+### Enhancements:
+1. Collecting and processing a custom and more diverse dataset
+2. Experimenting with training parameters
+3. Adding a model to account for pen pressure
 
-# Methodology
-## Custom Dataset
+# Datasets
+The original dataset, [IAM On-Line Handwriting Database](https://fki.tic.heia-fr.ch/databases/iam-on-line-handwriting-database), used for training the model, includes scripts to download and prepare the data. It consists of handwritten text paired with pen coordinates, making it a good starting point for training.
 
-### Original Dataset
-The original dataset used for training the model is the [IAM On-Line Handwriting Database](https://fki.tic.heia-fr.ch/databases/iam-on-line-handwriting-database). X-rayLaser's repository includes a script to download and prepare the data for training. The dataset consists of handwritten lines of text (strings) paired with the pen coordinates (arrays of tuples) used to write the text. The dataset is fairly large and diverse, making it a good starting point for training the model.
+I then collected a lot of my own handwriting. Below is a comparison of the character counts between the IAM dataset and my handwriting dataset.
 
-### Custom Dataset
-I expanded the array of characters the model can produce by including both text and numbers in the new dataset. The text prompts are taken from a collection of famous speeches, and the numbers are generated randomly using [random_number_prompts.py](./utils/random_number_prompts.py).
+**IAM**
+- Lines: 12,187
+- Characters: 351,868
+- Points: 7,651,948
 
-### Hardware
-I did not have access to the technology used to collect the original dataset. Instead, I used a Wacom Intuos tablet to collect the data. The tablet records the pen coordinates and whether the pen is touching the surface of the tablet. Additionally, it records pen pressure, which I will use to build a new model.
+**My Handwriting**
+- Lines: 6,128
+- Characters: 94,498
+- Points: 1,546,069
 
-### Software
-Wacom provides a software development kit (SDK) that allows developers to access data from the tablet. I used the web-based UI and SDK to collect the data and save it in a Universal Ink Model (UIM) file. I used [parse_uim.py](./utils/parse_uim.py) to convert the UIM files to the basic data format of (x, y, pen state, pressure).
+![Character Counts](./assets/character_counts.png)
 
-### Comparison of Datasets
-Todo: Add a comparison of the original dataset and the custom dataset.
+You can see the IAM dataset is much larger. Also note that in my handwriting dataset I collected quite a few numbers [0-9] and special characters [.,!?]. I wanted to see how well the model could generalize to these characters.
 
-## Preprocessing the Custom Dataset
-Before loading the new dataset into a data provider, I needed to preprocess the data to match the format of the IAM dataset. Details can be found in [/notebooks](./notebooks).
+Additional metrics can be found using the [data analysis notebook](./data/analyze.ipynb) and the [compare datasets notebook](./notebooks/compare_datasets.ipynb).
 
-## Building a New Data Provider
-To prepare the new dataset for training, I built a new data provider called [CustomProvider](./handwriting_synthesis/data_providers/custom.py). The data provider reads the pen coordinates and the corresponding text from the preprocessed dataset and prepares it for training. I followed the instructions [here](https://github.com/X-rayLaser/pytorch-handwriting-synthesis-toolkit?tab=readme-ov-file#data-preparation).
+# Collecting Data
+## Hardware
+I used a Wacom Intuos tablet to collect the data. The tablet records pen coordinates, pen pressure, and pen state. This additional data on pen pressure will be used to build a new model.
 
-## Training and Evaluating Experiments
-I trained the model with four different datasets:
+## User Interface
+** WIP **
+
+For ongoing data collection, I built a simple web app to collect more data. See [/app](/app) for usage.
+
+A major portion fo the app was integrating Wacom's SDK to collect the pen data. The SDK provides a way to collect pen coordinates, pen pressure, and pen state.
+
+# Data Processing
+Getting collected data into the correct format for training was a main driver of this project. I added functions and tool so that custom datasets can be used alongside the IAM dataset. I broke the data processing into three steps: [formatting](./data/format.ipynb), [analyzing](./data/analyze.ipynb), and [packaging](./data/package.ipynb). See the [/data README](./data/README.md) for more details and instructions on processing your own data.
+
+Additionally, I created a new data provider, [CustomProvider](./handwriting_synthesis/data_providers/custom.py), to take the packaged data and prepare it for training. The one in x-rayLasers toolkit designed for the IAM dataset was fine, but I needed one that could handle the custom dataset (and I wanted to learn how it worked). I followed the instructions from [original toolkit](https://github.com/X-rayLaser/pytorch-handwriting-synthesis-toolkit?tab=readme-ov-file#data-preparation).
+
+# Model Training and Evaluating
+The model was trained using different datasets and parameters:
 1. IAM dataset
+4. IAM dataset fine-tuned with my handwriting dataset
 2. Custom dataset
 3. Combined dataset (IAM + Custom)
-4. IAM dataset fine-tuned with the custom dataset
 
-### IAM Training Metrics
-#### Batch Size 32
+## IAM Dataset
+**Batch Size 32**
 <p float="left">
   <img src="./assets/iam_32_loss.png" width="30%" />
   <img src="./assets/iam_32_mse.png" width="30%" /> 
   <img src="./assets/iam_32_sse.png" width="30%" />
 </p>
 
-#### Batch Size 64
+**Batch Size 64**
 <p float="left">
   <img src="./assets/iam_64_loss.png" width="30%" />
   <img src="./assets/iam_64_mse.png" width="30%" /> 
   <img src="./assets/iam_64_sse.png" width="30%" />
 </p>
 
-### Custom Training Metrics
+## Fine-Tuned IAM Dataset (Normalized)
+**Fine-Tuned with my handwriting normalized to the IAM data**
+<p float="left">
+  <img src="./assets/fine_tuned_loss.png" width="30%" />
+  <img src="./assets/fine_tuned_mse.png" width="30%" /> 
+  <img src="./assets/fine_tuned_sse.png" width="30%" />
+</p>
 
-### Combined Training Metrics
+## Fine-Tuned IAM Dataset (Interpolated)
+**Fine-Tuned with my handwriting with 1.2x points per character compared to the IAM data**
 
-### Fine-tuned IAM Dataset Metrics
+** Todo: Add more formal evaluations **
 
-### Results
+# Priming
+The model can be primed with a sequence of pen coordinates to generate a sequence that follows the "style" of the primed sequence. More details are in the [notebooks](./notebooks/priming.ipynb).
 
-## Building a New Model (In Progress)
-Happy with the improved performance, I have decided to build an additional model that accounts for pen pressure. I will use "stroke thickness" as a proxy for pen pressure. Stay tuned for updates on this model!
+# Pressure -- A New Model
+** WIP **
 
-# Todo
-- [ ] Add a comparison of the original dataset and the custom dataset.
-- [ ] Add a detailed section on the data provider.
-- [ ] Add a section on the new model that accounts for pen pressure.
-- [ ] Add training infrastructure section.
-- [ ] Add priming section.
-- [ ] Add dataflow automation with Prefect.
+To improve handwriting authenticity, I plan to add pen pressure as a dimension in the model output. The new dataset includes pen pressure data collected using the Wacom Intuos tablet.
+
+Rather than modifying the existing model, I plan on layering a new model on top of the existing one's output. 
+
+I will experiment with different architectures: 
+1. One that takes pen coordinates and pen state to output pen pressure.
+2. Another that includes text in the input.
+
+Visualization of pen pressure will be done using a [plotting technique](./notebooks/thickness.ipynb).
+![Stroke Thickness](./assets/stroke_thickness.png)
+
+# Additional Resources
+
+## Training Infrastructure
+*Todo: Add details.*
+
+## Dataflow Automation with Prefect
+*Todo: Add details.*
