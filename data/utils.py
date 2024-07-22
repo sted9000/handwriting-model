@@ -210,6 +210,7 @@ def create_lines_from_strokes(s, coord_constant):
             continue
         # if not first stroke, check if it's the start of a new line
         else:
+
             first_point = stroke[0]
             first_x = first_point[0]
             first_y = first_point[1]
@@ -313,9 +314,7 @@ def format_uim_v1_data(data_source):
     for i, line in enumerate(lines):
         if i not in blacklisted_transcripts:
             if line is not None:
-                print(f'Line {i} is not None')
                 if os.path.exists(f'{data_source}/transcripts/{i}.txt'):
-                    print(f'Tscr exists')
                     transcript = open(f'{data_source}/transcripts/{i}.txt', 'r').read()
                     with open(f'{output_dir}/{i}.pkl', 'wb') as fp:
                         pickle.dump({'transcript': transcript, 'strokes': line}, fp)
