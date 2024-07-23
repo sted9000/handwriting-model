@@ -1,19 +1,21 @@
 # Introduction
 
-**WIP: This repository is a work in progress.**
-
 ![Handwriting Synthesis](./assets/improve_me_please.png)
 
-This repository aims to enhance [X-rayLaser's handwriting synthesis](https://github.com/X-rayLaser/pytorch-handwriting-synthesis-toolkit) project, making it indistinguishable from human-produced handwriting.
+This repository aims to enhance [X-rayLaser's handwriting synthesis](https://github.com/X-rayLaser/pytorch-handwriting-synthesis-toolkit) project, with the goal of producing handwriting that is indistinguishable from human handwriting.
 
-The original toolkit uses recurrent neural networks for handwriting synthesis, following Alex Graves's paper [Generating Sequences With Recurrent Neural Networks](https://arxiv.org/abs/1308.0850). I highly recommend reading X-rayLaser's README and the paper for a thorough explanation of the model and process.
+X-rayLaser's toolkit implements the principles from Alex Graves's paper [Generating Sequences With Recurrent Neural Networks](https://arxiv.org/abs/1308.0850).
 
-In essence, the model takes an array of tuples (x-coord, y-coord, end_of_stroke) paired with a string of text as input. It predicts the next pen coordinates and whether the pen is touching the surface, resulting in a sequence of pen coordinates that form handwritten text.
+At a high level, Recurrent Neural Networks (RNNs) are models capable of generating sequences by using one step's output as the next step's input. This model structure is well-suited for generating lines of text point-by-point in a convincingly human-like manner.
 
-### Enhancements:
-1. Collecting and processing a custom and more diverse dataset
-2. Experimenting with training parameters
-3. Adding a model to account for pen pressure
+The model's inputs are lines: Text paired with the sequential points that form the text's handwriting. These points are arrays of tuples consisting of the x and y coordinates, as well as a boolean indicating if the point is the end of a pen stroke. The trained model synthesizes a sequence of pen strokes given any new string of text.
+
+# Extensions and Enhancements
+
+The original project was designed to work with a specific dataset. I extended the project by adding data processing tools to work with custom datasets, collected my own data, and experimented with various training parameters.
+
+Additionally, to reproduce another dimension of human handwriting — the pressure of a pen's stroke — I built a model to predict pen pressure given a handwritten line and layered it on top of the existing model.
+
 
 # Datasets
 The original dataset, [IAM On-Line Handwriting Database](https://fki.tic.heia-fr.ch/databases/iam-on-line-handwriting-database), used for training the model, includes scripts to download and prepare the data. It consists of handwritten text paired with pen coordinates, making it a good starting point for training.
@@ -93,7 +95,7 @@ The model can be primed with a sequence of pen coordinates to generate a sequenc
 # Pressure -- A New Model
 ** WIP **
 
-To improve handwriting authenticity, I plan to add pen pressure as a dimension in the model output. The new dataset includes pen pressure data collected using the Wacom Intuos tablet.
+To improve handwriting "authenticity", I plan to add pen pressure as a dimension in the model output. The new dataset includes pen pressure data collected using the Wacom Intuos tablet.
 
 Rather than modifying the existing model, I plan on layering a new model on top of the existing one's output. 
 
