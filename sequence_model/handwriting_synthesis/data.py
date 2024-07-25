@@ -81,7 +81,6 @@ def to_absolute_coordinates(offsets):
 
 
 def save_to_h5(data, save_path, max_length):
-    print(f'data: {data}')
     with h5py.File(save_path, 'w') as f:
         dt = h5py.string_dtype(encoding='utf-8')
         ds_sequences = f.create_dataset('sequences', (0, max_length, 3), maxshape=(None, max_length, 3))
@@ -269,7 +268,6 @@ def preprocess_data(data_provider, max_length):
         offsets = to_offsets(points)
         offsets = truncate_sequence(offsets, max_length)
 
-        print(f'offsets: {offsets}, text: {text}')
         yield offsets, text
 
 

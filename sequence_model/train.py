@@ -42,7 +42,7 @@ def train_model(train_set, val_set, train_task, callbacks, config, training_task
     train_metrics = [metrics.MSE(), metrics.SSE()]
     val_metrics = [metrics.MSE(), metrics.SSE()]
 
-    loop = training.TrainingLoop(train_set, val_set, batch_size=config.batch_size, training_task=train_task,
+    loop = training.TrainingLoop(train_set, val_set, batch_size=config.batch_size, log_dir=args.data_dir, training_task=train_task,
                                  train_metrics=train_metrics, val_metrics=val_metrics)
 
     for cb in callbacks:

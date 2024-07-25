@@ -56,10 +56,14 @@ Additionally, I created a new data provider, [CustomProvider](./handwriting_synt
 
 # Model Training and Evaluating
 The model was trained using different datasets and parameters:
-1. IAM dataset
-4. IAM dataset fine-tuned with my handwriting dataset
+1. IAM dataset 
+   - Batch sizes
+   - Maximum sequence lengths
+   - Learning rates
+   - Hidden sizes
 2. Custom dataset
 3. Combined dataset (IAM + Custom)
+4. IAM dataset fine-tuned with my handwriting dataset
 
 ## IAM Dataset
 **Batch Size 32**

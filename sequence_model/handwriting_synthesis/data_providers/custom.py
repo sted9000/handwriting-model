@@ -21,6 +21,7 @@ class Custom:
 
     def get_data(self, file):
         # load the pickle file
+        print(file)
         content = pickle.load(open(os.path.join(self.data_dir, file), 'rb'))
         transcript = content['transcript']
         strokes = content['strokes']

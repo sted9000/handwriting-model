@@ -1,4 +1,5 @@
 import math
+import os
 import torch.nn.functional
 from torch.utils.data.dataloader import DataLoader
 from .metrics import MovingAverage
@@ -9,18 +10,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-error_handler = logging.FileHandler(filename='epochs_stats.log')
-error_handler.setLevel(logging.INFO)
-logger.addHandler(error_handler)
+error_handler = None
 
 
 class TrainingLoop:
-    def __init__(self, dataset, validation_dataset, batch_size, training_task=None,
+    def __init__(self, dataset, validation_dataset, batch_size, log_dir, training_task=None,
                  train_metrics=None, val_metrics=None):
         self._dataset = dataset
         self._val_set = validation_dataset
         self._output_device = ConsoleDevice()
         self._batch_size = batch_size
+        self._log_dir = log_dir
+        self._set_up_logger()
 
         if training_task is None:
             self._trainer = TrainingTask()
@@ -30,6 +31,15 @@ class TrainingLoop:
         self._callbacks = []
         self._train_metrics = train_metrics or []
         self._val_metrics = val_metrics or []
+
+    def _set_up_logger(self):
+        global error_handler
+        log_file = os.path.join(self._log_dir, 'epochs_stats.log')
+        if error_handler:
+            logger.removeHandler(error_handler)
+        error_handler = logging.FileHandler(filename=log_file)
+        error_handler.setLevel(logging.INFO)
+        logger.addHandler(error_handler)
 
     def start(self, initial_epoch, epochs):
         loader = DataLoader(self._dataset, self._batch_size, collate_fn=collate)

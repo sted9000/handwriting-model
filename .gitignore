@@ -14,3 +14,5 @@ venv/
 *.h5
 .python-version
 .DS_Store
+hs.pem
+config.sh
