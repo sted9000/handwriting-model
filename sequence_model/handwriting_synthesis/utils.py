@@ -1,3 +1,4 @@
+import pickle
 import re
 import os
 import traceback
@@ -530,7 +531,7 @@ def plot_points(points, mu, sd, is_offset=True):
     mu = mu.cpu().numpy()
 
     # Scale the points using sd and mu
-    points = points * sd + mu
+    # points = points * sd + mu
 
     x, y = 0, 0
     x_vals, y_vals = [x], [y]
@@ -558,35 +559,51 @@ def plot_points(points, mu, sd, is_offset=True):
     plt.gca().invert_yaxis()
     plt.show()
 
+
 def text_to_script(synthesizer, text, save_path, thickness=10):
     model = synthesizer.model
     mu = synthesizer.mu
     sd = synthesizer.sd
     tokenizer = synthesizer.tokenizer
-    lines, priming_line = split_into_lines(text)
 
-    c = data.transcriptions_to_tensor(tokenizer, [priming_line])
-    priming_x = model.sample_means(context=c, steps=700, stochastic=True)
-    priming_x = priming_x.unsqueeze(0)
+    # lines, priming_line = split_into_lines(text)
+    #
+    # c = data.transcriptions_to_tensor(tokenizer, [priming_line])
+    # priming_x = model.sample_means(context=c, steps=700, stochastic=True)
+    # priming_x = priming_x.unsqueeze(0)
+
+    """
+    New Login for custom priming
+    """
+    lines, _ = split_into_lines(text)
+    # get priming coords from '../data/data/fliff/lines/0.pkl
+    # unpickle the file and load the tensor
+    priming_file = '../data/data/fliff/lines/0.pkl'
+    with open(priming_file, 'rb') as f:
+        priming_x = pickle.load(f)['strokes']
     print(type(priming_x))
+    print(f'Primed the model with a line: "{priming_x}"')
 
-    print(f'Primed the model with a line: "{priming_line}"')
-    print(f'Priming_x shape: {priming_x.shape}')
-    print(f'Priming x values: {priming_x}')
-    plot_points(priming_x, mu, sd, is_offset=True)
+    # print(type(priming_x))
 
-    pil_images = []
-    for line in lines:
-        s = data.transcriptions_to_tensor(tokenizer, [line])
-        sample = model.sample_primed(priming_x, c, s, steps=1500)
-        points_seq = sample.cpu() * sd + mu
-        im = create_strokes_png(points_seq, lines=True, shrink_factor=2, suppress_errors=False,
-                                thickness=thickness)
-        pil_images.append(im)
-        print(f'Generated handwriting for a line: "{line}"')
-
-    image = merge_images(*pil_images)
-    image.save(save_path)
+    # print(f'Primed the model with a line: "{priming_x}"')
+    # print(f'Priming_x shape: {priming_x.shape}')
+    # print(f'Priming x values: {priming_x}')
+    # plot_points(priming_x, mu, sd, is_offset=True)
+    #
+    # pil_images = []
+    # for line in lines:
+    #     s = data.transcriptions_to_tensor(tokenizer, [line])
+    #     sample = model.sample_primed(priming_x, c, s, steps=1500)
+    #     points_seq = sample.cpu() * sd + mu
+    #     im = create_strokes_png(points_seq, lines=True, shrink_factor=2, suppress_errors=False,
+    #                             thickness=thickness)
+    #     pil_images.append(im)
+    #     print(f'Generated handwriting for a line: "{line}"')
+    #
+    # image = merge_images(*pil_images)
+    # image.save(save_path)
+    #
 
 
 def split_into_lines(text):

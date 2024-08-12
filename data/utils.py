@@ -242,7 +242,7 @@ def parse_uim_file(uim_file_path, coord_constant):
     ink_model: InkModel = parser.parse(uim_file_path)
     if ink_model.has_ink_structure():
         strokes = []
-        for stroke in ink_model.strokes:
+        for j, stroke in enumerate(ink_model.strokes):
             x = []
             y = []
             p = []
@@ -262,6 +262,13 @@ def parse_uim_file(uim_file_path, coord_constant):
             for i in range(len(x)):
                 current_stroke.append((round(x[i] * coord_constant), round(y[i] * coord_constant), round(p[i] * 100)))
             strokes.append(current_stroke)
+            print(f'Parsed {uim_file_path}')
+            print(f'Number of strokes: {len(strokes)}')
+            print(f'Strokes: {strokes}')
+
+            if j == 1:
+                exit()
+
         return strokes
 
 
